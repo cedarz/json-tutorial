@@ -64,8 +64,10 @@ static void test_parse() {
     test_parse_root_not_singular();
 }
 
+#define STR(one) "1" one "2" one "3"
 int main() {
     test_parse();
     printf("%d/%d (%3.2f%%) passed\n", test_pass, test_count, test_pass * 100.0 / test_count);
-    return main_ret;
+	printf("%s\n", STR("-"));
+	return main_ret;
 }
