@@ -92,11 +92,83 @@ static int lept_parse_number(lept_context* c, lept_value* v) {
 
 static const char* lept_parse_hex4(const char* p, unsigned* u) {
     /* \TODO */
+	unsigned int code = 0;
+	unsigned int u1 = 0;
+	unsigned int u2 = 0;
+	for (int i = 0; i < 4; ++i) {
+		char ch = *p++;
+		if (ch <= '9' && ch >= '0') {
+			u1 = u1 * 16 + ch - '0';
+		}
+		else if (ch <= 'F' && ch >= 'A') {
+			u1 = u1 * 16 + ch - 'A' + 10;
+		}
+		else if (ch <= 'f' && ch >= 'a') {
+			u1 = u1 * 16 + ch - 'a' + 10;
+		}
+		else {
+			p = NULL;
+			break;
+		}
+	}
+	code = u1;
+	if (u1 >= 0xD800 && u1 <= 0xDBFF) {
+		if (*p++ != '\\') {
+			return NULL;
+		}
+		if (*p++ != 'u') {
+			return NULL;
+		}
+		for (int i = 0; i < 4; ++i) {
+			char ch = *p++;
+			if (ch <= '9' && ch >= '0') {
+				u2 = u2 * 16 + ch - '0';
+			}
+			else if (ch <= 'F' && ch >= 'A') {
+				u2 = u2 * 16 + ch - 'A' + 10;
+			}
+			else if (ch <= 'f' && ch >= 'a') {
+				u2 = u2 * 16 + ch - 'a' + 10;
+			}
+			else {
+				p = NULL;
+				break;
+			}
+		}
+		if (u2 <= 0xDFFF && u2 >= 0xDC00) {
+			code = 0x10000 + (u1 - 0xD800) * 0x400 + (u2 - 0xDC00);
+		}
+		else {
+			return NULL;
+		}
+	}
+	*u = code;
     return p;
 }
 
 static void lept_encode_utf8(lept_context* c, unsigned u) {
     /* \TODO */
+	if (u <= 0x7F) {
+		PUTC(c, (char)u);
+	}
+	else if (u <= 0x7FF) {
+		PUTC(c, (char)(0xC0 | ((u >> 6) & 0xFF)));
+		PUTC(c, (char)(0x80 | (u & 0x3F)));
+	}
+	else if (u <= 0xFFFF) {
+		PUTC(c, (char)(0xE0 | ((u >> 12) & 0xFF)));
+		PUTC(c, (char)(0x80 | ((u >> 6) & 0x3F)));
+		PUTC(c, (char)(0x80 | (u & 0x3F)));
+	}
+	else if (u <= 0x10FFFF) {
+		PUTC(c, (char)(0xF0 | ((u >> 18) & 0xFF)));
+		PUTC(c, (char)(0x80 | ((u >> 12) & 0x3F)));
+		PUTC(c, (char)(0x80 | ((u >> 6) & 0x3F)));
+		PUTC(c, (char)(0x80 | (u & 0x3F)));
+	}
+	else {
+		//
+	}
 }
 
 #define STRING_ERROR(ret) do { c->top = head; return ret; } while(0)

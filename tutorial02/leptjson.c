@@ -89,8 +89,14 @@ static int lept_parse_number(lept_context* c, lept_value* v) {
 			++end;
 		}
 	}
-	if (*end == 'e' || *end == 'E') ++end;
-	while (*end <= '9' && *end >= '0') ++end;
+	if (*end == 'e' || *end == 'E') {
+		++end;
+		if (*end == '-' || *end == '+') ++end;
+		if (*end < '0' || *end > '9') {
+			return LEPT_PARSE_INVALID_VALUE;
+		}
+		while (*end <= '9' && *end >= '0') ++end;
+	}
 	errno = 0;
     v->n = strtod(c->json, &end);
 	if (errno == ERANGE && (v->n == HUGE_VAL || v->n == -HUGE_VAL)) {
