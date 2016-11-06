@@ -177,18 +177,22 @@ static void test_parse_object() {
     EXPECT_EQ_SIZE_T(0, lept_get_object_size(&v));
     lept_free(&v);
 
+	lept_init(&v);
+	EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v, "\"f\""));
+	lept_free(&v);
+
     lept_init(&v);
-    EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v,
-        " { "
-        "\"n\" : null , "
-        "\"f\" : false , "
-        "\"t\" : true , "
-        "\"i\" : 123 , "
-        "\"s\" : \"abc\", "
-        "\"a\" : [ 1, 2, 3 ],"
-        "\"o\" : { \"1\" : 1, \"2\" : 2, \"3\" : 3 }"
-        " } "
-    ));
+	EXPECT_EQ_INT(LEPT_PARSE_OK, lept_parse(&v,
+		" { "
+		"\"n\" : null , "
+		"\"f\" : false , "
+		"\"t\" : true , "
+		"\"i\" : 123 , "
+		"\"s\" : \"abc\", "
+		"\"a\" : [ 1, 2, 3 ],"
+		"\"o\" : { \"1\" : 1, \"2\" : 2, \"3\" : 3 }"
+		" } "
+		));
     EXPECT_EQ_INT(LEPT_OBJECT, lept_get_type(&v));
     EXPECT_EQ_SIZE_T(7, lept_get_object_size(&v));
     EXPECT_EQ_STRING("n", lept_get_object_key(&v, 0), lept_get_object_key_length(&v, 0));
@@ -223,7 +227,7 @@ static void test_parse_object() {
             EXPECT_EQ_DOUBLE(i + 1.0, lept_get_number(ov));
         }
     }
-    lept_free(&v);
+    //lept_free(&v);
 }
 
 #define TEST_ERROR(error, json)\
@@ -352,7 +356,7 @@ static void test_parse() {
     test_parse_number();
     test_parse_string();
     test_parse_array();
-#if 0
+#if 1
     test_parse_object();
 #endif
 
